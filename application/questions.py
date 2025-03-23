@@ -78,4 +78,12 @@ def find_best_match(user_input, temp_file_path=None):
         pass
     elif best_match_idx == 13:
         return q14(question, temp_file_path)
+    elif best_match_idx == 14:
+        return q15(question, temp_file_path)
+    elif best_match_idx == 15:
+        return q16(question, temp_file_path)
+    elif best_match_idx == 16:
+        return q17(question, temp_file_path)
+    elif best_match_idx == 17:
+        return q18(question, temp_file_path)
     return questions[best_match_idx]

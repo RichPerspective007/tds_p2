@@ -7,6 +7,10 @@ import os
 import zipfile
 import pandas as pd
 import chardet
+import numpy as np
+from datetime import timedelta
+from datetime import datetime
+import platform
 
 
 def q1():
@@ -55,8 +59,6 @@ def q4(question):
         print("Not enough numbers to process.")
 
 def q5(question):
-    import numpy as np
-
     # Extract numbers inside curly braces
     array_matches = re.findall(r'\{([\d, ]+)\}', question)
 
@@ -87,8 +89,6 @@ def q6(question: str, html_file_path: str) -> str:
     pass
 
 def q7(question, **kwargs):
-    from datetime import timedelta
-    from datetime import datetime
 
     # Extract the day and dates using regex
     match = re.search(r'How many (\w+)s? .*? (\d{4}-\d{2}-\d{2}) to (\d{4}-\d{2}-\d{2})\?', question)
@@ -273,8 +273,46 @@ def q14(question: str, zip_file_path: str) -> str:
     return sha256_hash.hexdigest()
 
 
-def q15(question: str, zip_file_path: str):
-    pass
+def q15(question: str, zip_file_path: str) -> int:
+    # Step 1: Extract required parameters from the question
+    size_match = re.search(r"at least (\d+) bytes", question)
+    date_match = re.search(r"on or after (\w{3}, \d{1,2} \w{3}, \d{4}, [\d:]+ [aApPmM]{2} IST)", question)
+
+    if not size_match or not date_match:
+        raise ValueError("Could not extract size or date from the question.")
+
+    min_size = int(size_match.group(1))
+    date_str = date_match.group(1)
+
+    # Convert given date to a comparable timestamp
+    reference_datetime = datetime.strptime(date_str, "%a, %d %b, %Y, %I:%M %p IST")
+    # Step 2: Extract the zip file while preserving timestamps
+    extract_dir = os.path.splitext(zip_file_path)[0]  # Extracted folder name
+    os.makedirs(extract_dir, exist_ok=True)
+    system_os = platform.system()
+    if system_os == "Windows":
+        subprocess.run(["7z", "x", zip_file_path, f"-o{os.path.abspath(extract_dir)}"], check=True, shell=True)
+    else:
+        subprocess.run(["unzip", "-o", zip_file_path, "-d", extract_dir], check=True)
+    # Step 3: Iterate over files and compute total size
+    total_size = 0
+
+    for root, _, files in os.walk(extract_dir):
+        for file_name in files:
+            file_path = os.path.join(root, file_name)
+
+            # Get file size
+            file_size = os.path.getsize(file_path)
+
+            # Get modification time
+            mod_time = datetime.fromtimestamp(os.path.getmtime(file_path))
+            # Check if file meets the conditions
+            if file_size >= min_size and mod_time >= reference_datetime:
+                print(file_size, mod_time)
+                total_size += file_size
+
+    return total_size
+
 
 def q16(question: str, zip_file_path: str):
     pass
