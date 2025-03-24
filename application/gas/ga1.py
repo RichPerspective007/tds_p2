@@ -11,12 +11,13 @@ import numpy as np
 from datetime import timedelta
 from datetime import datetime
 import platform
+from bs4 import BeautifulSoup
 
 
-def q1():
+def q1_1():
     return "Version: Code 1.98.2 OS Version: Windows_NT x64 10.0.22631"
 
-def q2(email, **kwargs):
+def q1_2(email, **kwargs):
     r = httpx.get(f'https://httpbin.org/get?email={email}')
     js = json.loads(r.text)
 
@@ -28,7 +29,7 @@ def q2(email, **kwargs):
 
     return resp
 
-def q3(temp_file_path):
+def q1_3(temp_file_path):
     process = subprocess.run(
         ["npx", "-y", "prettier@3.4.2", temp_file_path], 
         capture_output=True, text=True, shell=True
@@ -38,7 +39,7 @@ def q3(temp_file_path):
     sha256_hash = hashlib.sha256(process.stdout.encode()).hexdigest()
     return sha256_hash
 
-def q4(question):
+def q1_4(question):
     # Extract numbers from the sentence
     numbers = list(map(int, re.findall(r'\d+', question)))
 
@@ -58,7 +59,7 @@ def q4(question):
     else:
         print("Not enough numbers to process.")
 
-def q5(question):
+def q1_5(question):
     # Extract numbers inside curly braces
     array_matches = re.findall(r'\{([\d, ]+)\}', question)
 
@@ -85,10 +86,12 @@ def q5(question):
     else:
         return "Arrays not found in text."
 
-def q6(question: str, html_file_path: str) -> str:
-    pass
+def q1_6(question: str, html_file_path: str) -> str:
+    with open(html_file_path, 'r') as htmlfile:
+        soup = BeautifulSoup(htmlfile, 'html.parser')
+    return soup.find('input',type='hidden').get('value')
 
-def q7(question, **kwargs):
+def q1_7(question, **kwargs):
 
     # Extract the day and dates using regex
     match = re.search(r'How many (\w+)s? .*? (\d{4}-\d{2}-\d{2}) to (\d{4}-\d{2}-\d{2})\?', question)
@@ -117,7 +120,7 @@ def q7(question, **kwargs):
 
     return count
 
-def q8(question: str, zip_file_path: str):
+def q1_8(question: str, zip_file_path: str):
     column_match = re.search(r'"(.+)"', question)
     if not column_match:
         raise ValueError("Column name not found in the question.")
@@ -148,7 +151,7 @@ def q8(question: str, zip_file_path: str):
     # Return the value in the specified column (assuming a single row)
     return df[column_name].iloc[0]
 
-def q9(question: str):
+def q1_9(question: str):
     # Extract JSON from the question
     json_match = re.search(r'\[\{.*\}\]', question)
     if not json_match:
@@ -162,7 +165,7 @@ def q9(question: str):
     # Return JSON as a compact string (no spaces or newlines)
     return sorted_json
 
-def q10(question: str, file_path: str) -> str:
+def q1_10(question: str, file_path: str) -> str:
     # Read the txt file and convert it into a dictionary
     with open(file_path, 'r', encoding='utf-8') as f:
         data = dict(line.strip().split('=') for line in f if '=' in line)
@@ -175,10 +178,17 @@ def q10(question: str, file_path: str) -> str:
 
     return hash_sha256  # Returning SHA-256 by default
 
-def q11(question: str, html_file_path: str) -> str:
-    pass
+def q1_11(question: str, html_file_path: str) -> str:
+    with open(html_file_path, 'r') as htmlfile:
+        soup = BeautifulSoup(htmlfile, 'html.parser')
 
-def q12(question: str, zip_file_path: str) -> int:
+    foo = soup.select('div.d-none')[0].select('.foo')
+    s = 0
+    for f in foo:
+        s += int(f.get('data-value'))
+    return s
+
+def q1_12(question: str, zip_file_path: str) -> int:
     # Dynamically extract symbols from the question
     symbols = re.findall(r'(.) OR', question)  # More general regex for extracting symbols
     symbols.append(re.findall(r'OR (.)', question)[-1])
@@ -217,10 +227,10 @@ def q12(question: str, zip_file_path: str) -> int:
 
     return total_sum
 
-def q13(question: str):
+def q1_13(question: str):
     pass
 
-def q14(question: str, zip_file_path: str) -> str:
+def q1_14(question: str, zip_file_path: str) -> str:
     # Step 1: Extract the zip file into a new folder
     extract_dir = os.path.splitext(zip_file_path)[0]  # Extracted folder name
     os.makedirs(extract_dir, exist_ok=True)
@@ -273,7 +283,7 @@ def q14(question: str, zip_file_path: str) -> str:
     return sha256_hash.hexdigest()
 
 
-def q15(question: str, zip_file_path: str) -> int:
+def q1_15(question: str, zip_file_path: str) -> int:
     # Step 1: Extract required parameters from the question
     size_match = re.search(r"at least (\d+) bytes", question)
     date_match = re.search(r"on or after (\w{3}, \d{1,2} \w{3}, \d{4}, [\d:]+ [aApPmM]{2} IST)", question)
@@ -314,11 +324,30 @@ def q15(question: str, zip_file_path: str) -> int:
     return total_size
 
 
-def q16(question: str, zip_file_path: str):
-    pass
+def q1_16(question: str, zip_file_path: str):
+    process = subprocess.run(["./q16script.sh", zip_file_path], capture_output=True, text=True)
+    return process.stdout
 
-def q17(question: str, zip_file_path: str):
-    pass
+def q1_17(question: str, zip_file_path: str) -> int:
+    extract_dir = os.path.splitext(zip_file_path)[0]  # Extracted folder name
+    os.makedirs(extract_dir, exist_ok=True)
 
-def q18(question: str, zip_file_path: str = None):
-    pass
+    with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
+        zip_ref.extractall(extract_dir)
+    
+    file_path = []
+    for root, _, files in os.walk(extract_dir):
+        for file_name in files:
+            file_path.append(os.path.join(root, file_name))
+    with open(file_path[0], "r") as f:
+        lines_a = set(f.readlines())
+
+    with open(file_path[1], "r") as f:
+        lines_b = set(f.readlines())
+
+    # Find lines present in file_a but not in file_b
+    unique_lines = lines_a - lines_b
+    return len(unique_lines)
+
+def q1_18(question: str, zip_file_path: str = None):
+    return "SELECT SUM(units * price) FROM tickets WHERE LOWER(TRIM(type)) = 'gold';"

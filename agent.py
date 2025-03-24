@@ -4,7 +4,19 @@ import os
 from typing import Optional
 #from app.utils.openai_client import get_openai_response
 from application.utils.file_handler import save_upload_file_temporarily
+from application.utils.embedsenttrans import create_embedding
+from dotenv import load_dotenv
 
+load_dotenv()
+RUN_ENV = os.getenv("RUN_ENV", "dev")
+
+if RUN_ENV == "dev":
+    print('Create (0) or Load (1) embeddings: ')
+    ch = int(input())
+    if ch == 0:
+        create_embedding()
+    else:
+        pass
 print('Some imports')
 
 from application.questions import find_best_match
@@ -44,7 +56,3 @@ async def process_question(
         return {"answer": answer}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run("agent:app", host="0.0.0.0", port=8000, reload=True)
