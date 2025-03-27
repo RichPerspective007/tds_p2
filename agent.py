@@ -1,5 +1,6 @@
 from fastapi import FastAPI, File, UploadFile, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 import os
 from typing import Optional
 #from app.utils.openai_client import get_openai_response
@@ -52,7 +53,9 @@ async def process_question(
         
         # Get answer from OpenAI
         answer = find_best_match(question, temp_file_path)
-        
-        return {"answer": answer}
+        if type(answer) == str:
+            return {"answer": answer}
+        else:
+            return StreamingResponse(answer, media_type='image/webp', headers={"Content-Disposition": "attachment; filename=output.webp"})
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
