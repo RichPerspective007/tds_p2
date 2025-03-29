@@ -1,12 +1,15 @@
 from fastapi import FastAPI, File, UploadFile, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, JSONResponse
 import os
 from typing import Optional
 #from app.utils.openai_client import get_openai_response
 from application.utils.file_handler import save_upload_file_temporarily
 from application.utils.embedsenttrans import create_embedding
 from dotenv import load_dotenv
+from typing import List
+from pydantic import BaseModel
+from application.gas.ga2 import handle_q6, handle_q9
 
 load_dotenv()
 RUN_ENV = os.getenv("RUN_ENV", "dev")
@@ -38,6 +41,20 @@ app.add_middleware(
 )
 
 print('cors added')
+
+class NameRequest(BaseModel):
+    name: List[str]
+@app.post("/api/p2ga2q6", response_class=JSONResponse)
+def get_answer(request: NameRequest):
+    print(request.name)
+    return handle_q6(request.name)
+
+class ClassRequest(BaseModel):
+    class_: List[str]
+@app.post("/api/p2ga2q9", response_class=JSONResponse)
+def get_answer(request: ClassRequest):
+    print(request.class_)
+    return handle_q9(request.class_)
 
 @app.post("/api/")
 async def process_question(

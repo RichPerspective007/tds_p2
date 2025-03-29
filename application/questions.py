@@ -44,7 +44,7 @@ def find_best_match(user_input, temp_file_path=None):
     elif best_match_idx == 11:    
         return q1_12(question, temp_file_path)
     elif best_match_idx == 12:
-        pass
+        return q1_13(question)
     elif best_match_idx == 13:
         return q1_14(question, temp_file_path)
     elif best_match_idx == 14:

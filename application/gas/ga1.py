@@ -228,7 +228,7 @@ def q1_12(question: str, zip_file_path: str) -> int:
     return total_sum
 
 def q1_13(question: str):
-    pass
+    return "https://raw.githubusercontent.com/22f3000819/tds_p2_ga1_13/main/email.json"
 
 def q1_14(question: str, zip_file_path: str) -> str:
     # Step 1: Extract the zip file into a new folder
