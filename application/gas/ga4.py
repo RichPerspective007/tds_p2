@@ -1,12 +1,15 @@
 import re
+import os
 from bs4 import BeautifulSoup
 import requests
 from urllib.parse import urlencode
 import json
 import requests
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timedelta
 import feedparser
+from dotenv import load_dotenv
+load_dotenv()
 
 def q4_1(question: str = None, file_path: str = None):
     pn = re.search(r'page number (\d+)', question).group(1)
@@ -22,7 +25,7 @@ def q4_1(question: str = None, file_path: str = None):
     return f"{sumz}"
 
 def q4_2(question: str = None, file_path: str = None):
-    bounds = re.search('between (\d+) and (\d+)', question)
+    bounds = re.search(r'between (\d+) and (\d+)', question)
     lb = min(int(bounds.group(1)), int(bounds.group(2)))
     ub = max(int(bounds.group(1)), int(bounds.group(2)))
     print(lb, ub)
@@ -123,7 +126,7 @@ def q4_4(question: str = None, file_path: str = None):
 
 def q4_5(question: str = None, file_path: str = None):
     print('entered ga4q5')
-    s = re.search('What is the (maximum|minimum) (latitude|longitude) of the bounding box of the city ([\w\s]+) in the country ([\w\s]+) on the Nominatim API?', question)
+    s = re.search(r'What is the (maximum|minimum) (latitude|longitude) of the bounding box of the city ([\w\s]+) in the country ([\w\s]+) on the Nominatim API?', question)
     print('maxminlatlong')
     minmax = s.group(1).strip()
     latlong = s.group(2).strip()
@@ -167,8 +170,8 @@ def q4_5(question: str = None, file_path: str = None):
     return f"{ans}"
 
 def q4_6(question: str = None, file_path: str = None):
-    topic = re.search('mentioning ([\w\s]+) (and)? having', question).group(1).strip()
-    minpoints = re.search('at least (\d+) points', question).group(1).strip()
+    topic = re.search(r'mentioning ([\w\s]+) (and)? having', question).group(1).strip()
+    minpoints = re.search(r'at least (\d+) points', question).group(1).strip()
     print(topic, minpoints)
     # Fetch the feed with posts mentioning "topic" and having at least minpoints points
     feed_url = "https://hnrss.org/newest?" + urlencode({"q": topic, "points": minpoints})
@@ -180,8 +183,59 @@ def q4_6(question: str = None, file_path: str = None):
         print(feed.entries[0].link)
         return f"{feed.entries[0].link}"
 
+# Function to search for users based on location and followers, sorted by join date
+def search_users(loc: str, followers: int, headers: dict):
+    url = f"https://api.github.com/search/users?q=location:{loc}+followers:>{followers}&sort=joined&order=desc"
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        return response.json().get('items', [])
+    else:
+        print(f"Error: {response.status_code} - {response.json().get('message')}")
+        return []
 def q4_7(question: str = None, file_path: str = None):
-    return "ga4_q7"
+    #final my code
+    import requests
+    
+    s = re.search(r'city (\w+) with over (\d+) followers', question)
+    city = s.group(1).strip()
+    minfollowers = int(s.group(2).strip())
+    cutoff = re.search(r'after ([^.]+)', question).group(1).strip()
+    print(city, minfollowers, cutoff)
+    try:
+        cutoff_datetime = datetime.strptime(cutoff, "%m/%d/%Y, %I:%M:%S %p")
+    except Exception as e:
+        print(type(e), e)
+    print('got datetime')
+    # Your GitHub personal access token (Replace with a valid token)
+    GITHUB_TOKEN = os.getenv('GITHUB_PAT')
+    headers = {'Authorization': f'token {GITHUB_TOKEN}'}
+
+    # Get users in Paris with more than 190 followers, sorted by join date (newest first)
+    users = search_users(city, minfollowers, headers)
+
+    # Process the first valid user who is not ultra-new
+    for user in users:
+        user_url = user['url']  # Get the profile API URL
+        user_response = requests.get(user_url, headers=headers)
+
+        if user_response.status_code == 200:
+            user_data = user_response.json()
+            created_at = user_data['created_at']  # ISO 8601 format
+            created_at_date = datetime.fromisoformat(created_at[:-1])  # Convert to datetime
+
+            # Check if the user is NOT ultra-new (joined more than 5 minutes ago)
+            if created_at_date < cutoff_datetime:
+                print(f"First valid user joined at: {created_at}")
+                print(f"User details: {user_data['login']} ({user_data['html_url']})")
+                break  # Stop after finding the first valid user
+        else:
+            print(f"Error fetching user details: {user_response.status_code}")
+
+    # If no valid users found
+    else:
+        print("No valid users found.")
+
+    return f"{created_at}"
 
 def q4_8(question: str = None, file_path: str = None):
     return "https://github.com/22f3000819/tds-ga2-q6"
@@ -191,7 +245,7 @@ def q4_9(question: str = None, file_path: str = None):
     os.environ['JAVA_HOME'] = 'C:\Java\jdk-1.8\bin'
     import tabula
     import pandas as pd
-    params = re.search('the total ([\w\s]+) marks of students who scored ([\d.]+) or more marks in ([\w\s]+) in groups (\d+)-(\d+) (including both groups)?', question)
+    params = re.search(r'the total ([\w\s]+) marks of students who scored ([\d.]+) or more marks in ([\w\s]+) in groups (\d+)-(\d+) (including both groups)?', question)
     msub = params.group(1).strip()
     minmarks = int(params.group(2).strip())
     psub = params.group(3).strip()
@@ -243,4 +297,91 @@ def q4_9(question: str = None, file_path: str = None):
     return f"{total_subj_marks}"
 
 def q4_10(question: str = None, file_path: str = None):
-    return "ga4_q10"
+    return """```
+Succurro cultellus hic.
+Contra repellendus supplanto argumentum.
+```
+
+# Deludo tactus
+
+[volutabrum cicuta](https://rubbery-lay.net)
+
+#### Ver conatus velociter sint compello
+
+[argumentum vilitas](https://eminent-bowler.biz)
+
+> Synagoga adulatio cultellus adhuc arguo addo vilis vitiosus aptus.
+
+[assumenda infit](https://heavy-opera.net)
+
+```javascript
+Decumbo damno adaugeo abeo corrumpo adipisci coerceo.
+Sperno capio demum vobis verto.
+Reiciendis attonbitus amet hic alioqui.
+Totam uter summopere itaque ustilo.
+```
+
+- cedo tenetur adversus stillicidium ademptio
+- subvenio convoco tamquam terebro
+- virgo corporis ultra totus
+- stultus volutabrum
+
+> Cometes peccatus uredo verto agnitio.
+
+- amplitudo vigor vomer vado
+- demitto aro depopulo calamitas ulciscor
+- demonstro ocer annus tergiversatio
+- adiuvo absconditus tergiversatio tergeo ex
+- auctor nesciunt currus aeger arcesso
+
+##### Vaco correptius vito corroboro caput itaque
+
+Ocer consuasor thymum cognomen. Adiuvo stella tutis calco dens. Vere similique comminor congregatio appono cetera creo aegre.
+
+> Capillus stipes careo perferendis totam patria.
+
+| demoror | venustas  | defluo       | ipsam    |
+| :------ | :-------- | :----------- | :------- |
+| ut      | nesciunt  | dolor        | tracto   |
+| vapulus | excepturi | succurro     | sono     |
+| spargo  | speculum  | desparatus   | combibo  |
+| copiose | cohibeo   | voluptatibus | abundans |
+
+> Pariatur auctus stillicidium astrum virga nobis curo cupiditas.
+
+- quae amplus maiores expedita crebro
+- volutabrum corona vallum
+- patrocinor vestrum suscipit
+- audax votum
+- audentia decimus tonsor ubi sophismata
+
+[tubineus vindico](https://exotic-coast.net/)
+
+#### Depereo vindico defaeco
+
+> Autus volubilis altus minima temporibus deinde considero antea valeo color.
+
+[voluptatem creator](https://subtle-event.net/)
+
+Sit tracto careo. Uterque vomer vindico autus spargo. Tantum depono alienus stipes campana ut autus.
+
+Caste tero ara. Tersus coaegresco dolore pectus crinis tenus. Tubineus antiquus decerno coniecto correptius adhaero verumtamen cohors amissio.
+
+Voro terra thema deputo cunctatio tenus illo. Harum terminatio sulum. Eius peccatus veniam audentia approbo aeneus alius torrens cognomen.
+
+Vobis voluntarius uterque pecto corpus expedita decimus. Compono clibanus creo coepi contabesco. Cruciamentum anser triduana stella.
+
+```javascript
+Commodi tametsi subiungo aureus cotidie sumptus.
+Creber vilicus vetus.
+Bos adficio clam vestigium certe conculco.
+Cur degero vigilo ulciscor atrocitas conitor acidus illum ager.
+```
+
+```bash
+Nemo tondeo architecto comparo curatio abbas.
+Volaticus aiunt ipsa.
+Congregatio vesica sumptus degusto suspendo tametsi solus.
+```
+
+## Illo campana bis decerno"""
