@@ -10,6 +10,8 @@ from dotenv import load_dotenv
 from typing import List
 from pydantic import BaseModel
 from application.gas.ga2 import handle_q6, handle_q9
+import requests
+from application.gas.ga4 import generate_markdown_outline, get_wikipedia_url, extract_headings_from_html
 
 load_dotenv()
 RUN_ENV = os.getenv("RUN_ENV", "dev")
@@ -55,6 +57,30 @@ class ClassRequest(BaseModel):
 def get_answer(request: ClassRequest):
     print(request.class_)
     return handle_q9(request.class_)
+
+@app.get("/api/p2ga4q3", response_class=JSONResponse)
+async def get_country_outline(country: str):
+    """
+    API endpoint that returns the markdown outline of the given country Wikipedia page.
+    """
+    if not country:
+        raise HTTPException(status_code=400, detail="Country parameter is required")
+
+    # Fetch Wikipedia page
+    url = get_wikipedia_url(country)
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        raise HTTPException(status_code=404, detail=f"Error fetching Wikipedia page: {e}")
+
+    # Extract headings and generate markdown outline
+    headings = extract_headings_from_html(response.text)
+    if not headings:
+        raise HTTPException(status_code=404, detail="No headings found in the Wikipedia page")
+
+    markdown_outline = generate_markdown_outline(headings)
+    return {"outline": f"{markdown_outline}"}
 
 @app.post("/api/")
 async def process_question(

@@ -6,6 +6,7 @@ import numpy as np
 import colorsys
 import pandas as pd
 from typing import List
+import base64
 
 # done
 def q2_1(question: str = None, file_path: str = None):
@@ -67,9 +68,10 @@ def q2_2(question: str = None, file_path: str = None):
     image = Image.open(file_path)
     img_io = BytesIO()
     image.save(img_io, format="WEBP", lossless=True, quality=100)
-    img_io.seek(0)
+    webp_bytes = img_io.getvalue()
+    base64_webp = base64.b64encode(webp_bytes).decode("utf-8")
     
-    return img_io
+    return f"{base64_webp}"
 
 # done
 def q2_3(question: str = None, file_path: str = None):
