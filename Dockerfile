@@ -12,33 +12,34 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install OpenJDK-8
+# 1. Install dependencies
 RUN apt-get update && \
-    apt-get install -y openjdk-8-jre && \
-    apt-get clean;
-    
-# Fix certificate issues
-RUN apt-get update && \
-    apt-get install ca-certificates-java && \
+    apt-get install -y --no-install-recommends \
+        wget \
+        gpg \
+        ca-certificates && \
     apt-get clean && \
-    update-ca-certificates -f;
+    rm -rf /var/lib/apt/lists/*
 
-# Setup JAVA_HOME -- useful for docker commandline
-ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64/
-RUN export JAVA_HOME
+# 2. Download and install Corretto 8 .deb package
+RUN wget https://corretto.aws/downloads/latest/amazon-corretto-8-x64-linux-jdk.deb -O corretto.deb && \
+    apt-get update && \
+    apt-get install -y ./corretto.deb && \
+    rm corretto.deb && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Set JAVA_HOME environment variable
-#ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64
-#ENV PATH "$JAVA_HOME/bin:$PATH"
+# 3. Set JAVA_HOME
+ENV JAVA_HOME=/usr/lib/jvm/java-1.8.0-amazon-corretto-amd64
+
+# 4. Verify installation
+RUN java -version
 
 # Install Node.js and npm (for npx)
 RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
     apt-get install -y nodejs
 
 RUN apt-get clean;
-
-RUN curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o ~/.local/bin/yt-dlp
-RUN chmod a+rx ~/.local/bin/yt-dlp
 
 # Copy only the required files
 COPY . .
@@ -48,8 +49,5 @@ RUN pip install --no-deps sentence-transformers
 RUN pip install torch --index-url https://download.pytorch.org/whl/cpu
 RUN pip install numpy scipy scikit-learn tqdm transformers
 
-# Expose the port FastAPI runs on
-EXPOSE 8080
-
 # Run the FastAPI application using Uvicorn
-CMD ["uvicorn", "agent:app", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["sh", "-c", "uvicorn agent:app --host 0.0.0.0 --port ${PORT}"]

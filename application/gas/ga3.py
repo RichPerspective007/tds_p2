@@ -178,7 +178,7 @@ def most_similar(embeddings):
     return most_similar_pair"""
 
 def q3_7(question: str = None, file_path: str = None):
-    return "http://127.0.0.1:8000/similarity"
+    return "https://tdsproject2shiva-962709320549.asia-south1.run.app/similarity"
 
 def q3_8(question: str = None, file_path: str = None):
-    return "http://127.0.0.1:8000/execute"
+    return "https://tdsproject2shiva-962709320549.asia-south1.run.app/execute"

@@ -365,7 +365,12 @@ def get_section(start_time: float, end_time: float):
     )
 
 def q5_9(question: str = None, file_path: str = None):
-    link = re.search(r'(https?://youtu.be/\w+)', question).group(1).strip()
+    link = ""
+    try:
+        link = re.search(r'(https?://youtu.be/\w+)', question).group(1).strip()
+    except Exception as e:
+        print(f"Error: {e}")
+    link = ""
     time_range = re.search(r'([\d.]+) and ([\d.]+) seconds',question)
     if not time_range:
         time_range = re.search(r'([\d.]+) to ([\d.]+)')

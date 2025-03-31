@@ -54,7 +54,7 @@ def q4_2(question: str = None, file_path: str = None):
     return f"{json.dumps(resp)}"
 
 def q4_3(question: str = None, file_path: str = None):
-    return "http://127.0.0.1:8000/api/p2ga4q3"
+    return "https://tdsproject2shiva-962709320549.asia-south1.run.app/api/p2ga4q3"
 
 def get_wikipedia_url(country: str) -> str:
     """
@@ -241,8 +241,6 @@ def q4_8(question: str = None, file_path: str = None):
     return "https://github.com/22f3000819/tds-ga2-q6"
 
 def q4_9(question: str = None, file_path: str = None):
-    import os
-    os.environ['JAVA_HOME'] = 'C:\Java\jdk-1.8\bin'
     import tabula
     import pandas as pd
     params = re.search(r'the total ([\w\s]+) marks of students who scored ([\d.]+) or more marks in ([\w\s]+) in groups (\d+)-(\d+) (including both groups)?', question)

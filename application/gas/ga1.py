@@ -34,13 +34,13 @@ def q1_2(email, **kwargs):
 
 def q1_3(temp_file_path):
     process = subprocess.run(
-        ["npx", "-y", "prettier@3.4.2", temp_file_path], 
+        f"npx -y prettier@3.4.2 {temp_file_path} | sha256sum",
         capture_output=True, text=True, shell=True
     )
 
     # Compute SHA-256 hash of the output
-    sha256_hash = hashlib.sha256(process.stdout.encode()).hexdigest()
-    return f"{sha256_hash}"
+    #sha256_hash = hashlib.sha256(process.stdout.encode()).hexdigest()
+    return f"{process.stdout}"
 
 def q1_4(question):
     # Extract numbers from the sentence
