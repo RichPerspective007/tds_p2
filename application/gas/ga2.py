@@ -79,10 +79,10 @@ def q2_3(question: str = None, file_path: str = None):
 
 # done
 def q2_4(question: str = None, file_path: str = None):
-    email = re.search(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', question).group(0)
+    email = re.search(r'(\d\w+@[de]{1}s.study.iitm.ac.in)', question).group(0)
     if not email:
         email = "22f3000819@ds.study.iitm.ac.in"
-    return hashlib.sha256(f"{email} {2025}".encode()).hexdigest()[-5:]
+    return str(hashlib.sha256(f"{email} {2025}".encode()).hexdigest()[-5:])
 
 # done
 def q2_5(question: str = None, file_path: str = None):
@@ -92,12 +92,12 @@ def q2_5(question: str = None, file_path: str = None):
     rgb = np.array(image) / 255.0
     lightness = np.apply_along_axis(lambda x: colorsys.rgb_to_hls(*x)[1], 2, rgb)
     light_pixels = np.sum(lightness > float(l))
-    return f'{light_pixels}'
+    return f"{light_pixels}"
 
 def q2_6(question: str = None, file_path: str = None):
     df = pd.read_json(file_path)
     df.to_pickle("ga2q6.pkl")
-    return "ga2_q6" # return vercel app url
+    return "https://tds-ga2-q6-rho.vercel.app/api/ga2q6" # return vercel app url
 
 def handle_q6(name: List[str]):
     df = pd.read_pickle("ga2q6.pkl")
@@ -116,7 +116,7 @@ def q2_8(question: str = None, file_path: str = None):
 def q2_9(question: str = None, file_path: str = None):
     df = pd.read_csv(file_path)
     df.to_pickle("ga2q9.pkl")
-    return "ga2_q9" # return vercel app url
+    return "https://tds-ga2-q6-rho.vercel.app/api/ga2q9" # return vercel app url
 
 def handle_q9(class_: List[str]):
     df = pd.read_pickle("ga2q9.pkl")

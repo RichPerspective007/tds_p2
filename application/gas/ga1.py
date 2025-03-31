@@ -12,13 +12,14 @@ from datetime import timedelta
 from datetime import datetime
 import platform
 from bs4 import BeautifulSoup
-
+from urllib.parse import urlencode
 
 def q1_1():
     return "Version: Code 1.98.2 OS Version: Windows_NT x64 10.0.22631"
 
 def q1_2(email, **kwargs):
-    r = httpx.get(f'https://httpbin.org/get?email={email}')
+    print('q1_2')
+    r = httpx.get('https://httpbin.org/get?'+urlencode({'email': '22f3000819@ds.study.iitm.ac.in'}))
     js = json.loads(r.text)
 
     resp = {}
@@ -26,8 +27,10 @@ def q1_2(email, **kwargs):
         if key == "headers":
             val["User-Agent"] = "HTTPie/3.2.1"
         resp[key] = val
-
-    return resp
+    print('resp')
+    resp_json_string = json.dumps(resp)
+    print('resp_json_string')
+    return f"{resp_json_string}"
 
 def q1_3(temp_file_path):
     process = subprocess.run(
@@ -37,7 +40,7 @@ def q1_3(temp_file_path):
 
     # Compute SHA-256 hash of the output
     sha256_hash = hashlib.sha256(process.stdout.encode()).hexdigest()
-    return sha256_hash
+    return f"{sha256_hash}"
 
 def q1_4(question):
     # Extract numbers from the sentence
@@ -55,9 +58,9 @@ def q1_4(question):
         # Compute the sum
         result = sum(constrained_array[0])
 
-        return result
+        return f"{result}"
     else:
-        print("Not enough numbers to process.")
+        return "Not enough numbers to process."
 
 def q1_5(question):
     # Extract numbers inside curly braces
@@ -80,7 +83,7 @@ def q1_5(question):
 
             # Compute the SUM
             result = sum(result_array)
-            return result
+            return f"{result}"
         else:
             return "TAKE function numbers not found."
     else:
@@ -89,7 +92,7 @@ def q1_5(question):
 def q1_6(question: str, html_file_path: str) -> str:
     with open(html_file_path, 'r') as htmlfile:
         soup = BeautifulSoup(htmlfile, 'html.parser')
-    return soup.find('input',type='hidden').get('value')
+    return f"{soup.find('input',type='hidden').get('value')}"
 
 def q1_7(question, **kwargs):
 
@@ -118,7 +121,7 @@ def q1_7(question, **kwargs):
             count += 1
         current_date += timedelta(days=1)
 
-    return count
+    return f"{count}"
 
 def q1_8(question: str, zip_file_path: str):
     column_match = re.search(r'"(.+)"', question)
@@ -149,21 +152,23 @@ def q1_8(question: str, zip_file_path: str):
         raise ValueError(f"Column '{column_name}' not found in the CSV file.")
 
     # Return the value in the specified column (assuming a single row)
-    return df[column_name].iloc[0]
+    return f"{df[column_name].iloc[0]}"
 
 def q1_9(question: str):
     # Extract JSON from the question
     json_match = re.search(r'\[\{.*\}\]', question)
+    print('json_match')
     if not json_match:
         raise ValueError("JSON data not found in the question.")
     
     json_data = json.loads(json_match.group())  # Parse JSON
-
+    print('json_data')
     # Sort by age first, then by name in case of ties
     sorted_json = sorted(json_data, key=lambda x: (x["age"], x["name"]))
-
+    print('sorted_json')
     # Return JSON as a compact string (no spaces or newlines)
-    return sorted_json
+    json_str = json.dumps(sorted_json)
+    return f"{json_str}"
 
 def q1_10(question: str, file_path: str) -> str:
     # Read the txt file and convert it into a dictionary
@@ -176,7 +181,7 @@ def q1_10(question: str, file_path: str) -> str:
     # Step 2: Try different hash functions
     hash_sha256 = hashlib.sha256(json_str.encode()).hexdigest()
 
-    return hash_sha256  # Returning SHA-256 by default
+    return f"{hash_sha256}"  # Returning SHA-256 by default
 
 def q1_11(question: str, html_file_path: str) -> str:
     with open(html_file_path, 'r') as htmlfile:
@@ -186,7 +191,7 @@ def q1_11(question: str, html_file_path: str) -> str:
     s = 0
     for f in foo:
         s += int(f.get('data-value'))
-    return s
+    return f"{s}"
 
 def q1_12(question: str, zip_file_path: str) -> int:
     # Dynamically extract symbols from the question
@@ -225,7 +230,7 @@ def q1_12(question: str, zip_file_path: str) -> int:
         if 'symbol' in df.columns and 'value' in df.columns:
             total_sum += df[df['symbol'].isin(symbols)]['value'].sum()
 
-    return total_sum
+    return f"{total_sum}"
 
 def q1_13(question: str):
     return "https://raw.githubusercontent.com/22f3000819/tds_p2_ga1_13/main/email.json"
@@ -280,7 +285,7 @@ def q1_14(question: str, zip_file_path: str) -> str:
                 while chunk := f.read(8192):  # Read in chunks
                     sha256_hash.update(chunk)
 
-    return sha256_hash.hexdigest()
+    return f"{sha256_hash.hexdigest()}"
 
 
 def q1_15(question: str, zip_file_path: str) -> int:
@@ -321,12 +326,12 @@ def q1_15(question: str, zip_file_path: str) -> int:
                 print(file_size, mod_time)
                 total_size += file_size
 
-    return total_size
+    return f"{total_size}"
 
 
 def q1_16(question: str, zip_file_path: str):
     process = subprocess.run(["./q16script.sh", zip_file_path], capture_output=True, text=True)
-    return process.stdout
+    return f"{process.stdout}"
 
 def q1_17(question: str, zip_file_path: str) -> int:
     extract_dir = os.path.splitext(zip_file_path)[0]  # Extracted folder name
@@ -347,7 +352,7 @@ def q1_17(question: str, zip_file_path: str) -> int:
 
     # Find lines present in file_a but not in file_b
     unique_lines = lines_a - lines_b
-    return len(unique_lines)
+    return f"{len(unique_lines)}"
 
 def q1_18(question: str, zip_file_path: str = None):
     return "SELECT SUM(units * price) FROM tickets WHERE LOWER(TRIM(type)) = 'gold';"

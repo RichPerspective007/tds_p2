@@ -51,7 +51,7 @@ def q4_2(question: str = None, file_path: str = None):
         curr["rating"] = f"{rating}"
         resp.append(curr)
 
-    return json.dumps(resp)
+    return f"{json.dumps(resp)}"
 
 def q4_3(question: str = None, file_path: str = None):
     return "http://127.0.0.1:8000/api/p2ga4q3"

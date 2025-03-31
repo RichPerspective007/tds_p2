@@ -924,4 +924,4 @@ def create_embedding():
 def q_embed(q):
     return model.encode(q, convert_to_tensor=True)
 
-create_embedding()
+#create_embedding()

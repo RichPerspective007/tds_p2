@@ -7,6 +7,8 @@ import gzip
 import json
 from collections import defaultdict
 from fuzzywuzzy import fuzz
+import base64
+import subprocess
 
 def convert_to_datetime(date):
     for fmt in ("%m-%d-%Y", "%Y/%m/%d", "%Y-%m-%d"):
@@ -16,7 +18,7 @@ def convert_to_datetime(date):
             continue
     return pd.NaT
 def q5_1(question: str = None, file_path: str = None):
-    s = re.search('before ([^.,;]+) for (\w+) sold in (\w+)', question)
+    s = re.search(r'before ([^.,;]+) for (\w+) sold in (\w+)', question)
     datetime_string = s.group(1)
     mdy = re.search(r'(\w{3}) (\d{1,2}) (\d{4}) (\d{1,2}:\d{1,2}:\d{1,2})', datetime_string)
     month = mdy.group(1)
@@ -121,8 +123,54 @@ def q5_2(question: str = None, file_path: str = None):
     print(f"Number of unique students: {len(student_ids)}")
     return f"{len(student_ids)}"
 
+def isDay(dtobj, day):
+  return dtobj.weekday() == day
+
+def isTime(dtobj, l, u):
+  return l <= dtobj.hour < u
+
 def q5_3(question: str = None, file_path: str = None):
-    return "ga5_q3"
+    s = re.search(r'successful (\w+) requests for pages under ([\w/]+) from (\d+):(\d+) until before (\d+):(\d+) on (\w+)', question)
+    reqtype = s.group(1).strip()
+    under = '/' + s.group(2).strip('/') + '/'
+    start = int(s.group(3))
+    end = int(s.group(5))
+    day = s.group(7).lower()
+    daynum = 0
+    if day.contains('mon'):
+        daynum = 0
+    elif day.contains('tue'):
+        daynum = 1
+    elif day.contains('wed'):
+        daynum = 2
+    elif day.contains('thu'):
+        daynum = 3
+    elif day.contains('fri'):
+        daynum = 4
+    elif day.contains('sat'):
+        daynum = 5
+    elif day.contains('sun'):
+        daynum = 6
+    
+    print(reqtype, under, start, end, day)
+    step1 = subprocess.run(f"cat data | grep -i '{reqtype} {under}'", capture_output=True, shell=True, text=True)
+    subprocess.run("rm -f forstep2.txt", shell=True)
+    with open('forstep2.txt', 'a') as f:
+        for line in step1.stdout.splitlines():
+            try:
+                status = int(line.split()[8])
+            except Exception as e:
+                status = 400
+            if 200 <= status < 300:
+                f.write(line + '\n')
+    step2 = subprocess.run("cat forstep2.txt | cut -d ' ' -f4", capture_output=True, shell=True, text=True)
+    count = 0
+    for line in step2.stdout.splitlines():
+        log_datetime = datetime.strptime(line.strip('['), "%d/%b/%Y:%H:%M:%S")
+        if(isDay(log_datetime, daynum) and isTime(log_datetime, start, end)):
+            count += 1
+
+    return f"{count}"
 
 
 def parse_log_line(line):
@@ -162,9 +210,9 @@ def load_logs(file_path):
 def convert_time(timestamp):
     return datetime.strptime(timestamp, "%d/%b/%Y:%H:%M:%S %z")
 
-def q5_4(question: str = None, file_path: str = None):
-    df = load_logs('s-anand.net-May-2024.gz')
-    s = re.search('under ([/\w]+) on ([\d-]+),', question)
+def q5_4(question: str = None, file_path: str = 's-anand.net-May-2024.gz'):
+    df = load_logs(file_path)
+    s = re.search(r'under ([/\w]+) on ([\d-]+),', question)
     under = s.group(1).strip(' ')
     on = s.group(2).strip(' ')
     print(s.group(1).strip(' '))
@@ -258,14 +306,85 @@ def q5_6(question: str = None, file_path: str = None):
         tot += int(saleval)
     return f"{tot}"
 
+
+def count_key_q(json_data):
+    count = 0
+    if isinstance(json_data, dict):
+        for key in json_data:
+            if key == "Q":
+                count += 1
+            count += count_key_q(json_data[key])
+    elif isinstance(json_data, list):
+        for item in json_data:
+            count += count_key_q(item)
+    return count
+
 def q5_7(question: str = None, file_path: str = None):
-    return "ga5_q7"
+    s = re.search(r'placeholder (\w+),', question)
+    if not s:
+        s = re.search(r'does (\w+) appear as a key', question)
+    if s:
+        key = s.group(1).strip()
+        print('placeholder = ', key)
+    else:
+        return "failed to extract key"
+    # Assuming the JSON file is loaded correctly
+    with open(file_path, 'r') as file:
+        data = json.load(file)
+
+    total = count_key_q(data)
+    print(total)
+    return f"{total}"
 
 def q5_8(question: str = None, file_path: str = None):
-    return "ga5_q8"
+    ts = re.search(r'after (\d{4}-\d{1,2}-\d{1,2}T\d{2}:\d{2}:\d{2}\.\d{1,3}Z)', question).group(1).strip()
+    stars = int(re.search(r'(\d+) useful stars', question).group(1).strip())
+    return f"""SELECT post_id
+FROM (
+    SELECT post_id
+    FROM (
+        SELECT post_id,
+               json_extract(comments, '$[*].stars.useful') AS useful_stars
+        FROM social_media
+        WHERE timestamp >= '{ts}'
+    )
+    WHERE EXISTS (
+        SELECT 1 FROM UNNEST(useful_stars) AS t(value)
+        WHERE CAST(value AS INTEGER) >= {stars}
+    )
+)
+ORDER BY post_id;"""
+
+def get_section(start_time: float, end_time: float):
+    with open("transcription.json") as f:
+        data = json.load(f)
+    
+    return " ".join(
+        item["text"] for item in data
+        if start_time <= item["start"] <= end_time
+    )
 
 def q5_9(question: str = None, file_path: str = None):
-    return "ga5_q9"
+    link = re.search(r'(https?://youtu.be/\w+)', question).group(1).strip()
+    time_range = re.search(r'([\d.]+) and ([\d.]+) seconds',question)
+    if not time_range:
+        time_range = re.search(r'([\d.]+) to ([\d.]+)')
+    if time_range:
+        try:
+            start = time_range.group(1).strip()
+            end = time_range.group(2).strip()
+            print(f"""{link} {start} {end}""")
+        except Exception as e:
+            return f"Error: {e}"
+    else:
+        return "failed to extract timestamps"
+    transcript = get_section(float(start), float(end))
+    print('will print now')
+    print(transcript)
+    return f"{transcript}"
 
 def q5_10(question: str = None, file_path: str = None):
-    return "ga5_q10"
+    with open('reconstructed_image.png', 'rb') as f:
+        b64 = base64.b64encode(f.read()).decode('utf-8')  # No newlines
+
+    return f"{b64}"

@@ -37,6 +37,9 @@ RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
 
 RUN apt-get clean;
 
+RUN curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o ~/.local/bin/yt-dlp
+RUN chmod a+rx ~/.local/bin/yt-dlp
+
 # Copy only the required files
 COPY . .
 
