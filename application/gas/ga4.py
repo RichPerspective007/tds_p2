@@ -86,7 +86,9 @@ def generate_markdown_outline(headings: list) -> str:
     return markdown_outline
 
 def q4_4(question: str = None, file_path: str = None):
-    required_city = re.search(r'forecast.*for (\w+)', question).group(1)
+    print('q4_4')
+    required_city = re.search(r'forecast description for (\w+)', question).group(1)
+    print('required_city', required_city)
     location_url = 'https://locator-service.api.bbci.co.uk/locations?' + urlencode({
         'api_key': 'AGbFAKx58hyjQScCXIYrxuEwJh2W2cmv',
         's': required_city,
@@ -98,15 +100,20 @@ def q4_4(question: str = None, file_path: str = None):
         'a': 'true',
         'format': 'json'
     })
-
+    print('location_url', location_url)
     # Fetch location data
     result = requests.get(location_url).json()
-    weather_url = 'https://www.bbc.com/weather/' + result['response']['results']['results'][0]['id']
-
+    print('fetched location')
+    try:
+        weather_url = 'https://www.bbc.com/weather/' + result['response']['results']['results'][0]['id']
+    except Exception as e:  
+        return f"Error: {e}"
+    print('weather_url', weather_url)
     # Fetch weather data
     response = requests.get(weather_url)
+    print('fetched weather')
     soup = BeautifulSoup(response.content, 'html.parser')
-
+    print('parsed weather')
     daily_summary = soup.find('div', attrs={'class': 'wr-day-summary'})
     daily_summary_list = re.findall('[a-zA-Z][^A-Z]*', daily_summary.text)
 

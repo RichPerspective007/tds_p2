@@ -98,6 +98,7 @@ def find_best_match(user_input, temp_file_path=None):
     elif best_match_idx == 38:
         return q4_3(question, temp_file_path)
     elif best_match_idx == 39:
+        print('q4_4_indetified')
         return q4_4(question, temp_file_path)
     elif best_match_idx == 40:
         return q4_5(question, temp_file_path)

@@ -103,7 +103,9 @@ def handle_q6(name: List[str]):
     df = pd.read_pickle("ga2q6.pkl")
     marks_list = df.set_index("name").loc[name, "marks"].tolist()
     print(marks_list)
-    return marks_list
+    return {
+        "marks": marks_list
+    }
 
 # done
 def q2_7(question: str = None, file_path: str = None):

@@ -42,12 +42,14 @@ RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
 RUN apt-get clean;
 
 # Copy only the required files
-COPY . .
+COPY requirements.txt .
 
 RUN pip install -r requirements.txt
 RUN pip install --no-deps sentence-transformers
 RUN pip install torch --index-url https://download.pytorch.org/whl/cpu
 RUN pip install numpy scipy scikit-learn tqdm transformers
+
+COPY . .
 
 # Run the FastAPI application using Uvicorn
 CMD ["sh", "-c", "uvicorn agent:app --host 0.0.0.0 --port ${PORT}"]
